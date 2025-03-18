@@ -26,15 +26,23 @@
 
                         document.getElementById('info').innerHTML = `Stored IP: ${userIP} <br> Latitude: ${lat}, Longitude: ${lon} <br> Timestamp: ${timestamp}`;
 
-                        let requestData = { ip: userIP, latitude: lat, longitude: lon };
+                        let requestData = {ip: userIP, latitude: lat, longitude: lon};
 
+                        // fetch("https://script.google.com/macros/s/AKfycbywPFEeYO2_19pEBW5ubz66UApedOV75a-n_7oq1VGOQrI-NerTn_lOo7IsnfYVqM4/exec", {
+                        //     method: "POST",
+                        //     headers: { "Content-Type": "application/json" },
+                        //     body: JSON.stringify(requestData)
+                        // });
                         fetch("https://script.google.com/macros/s/AKfycbywPFEeYO2_19pEBW5ubz66UApedOV75a-n_7oq1VGOQrI-NerTn_lOo7IsnfYVqM4/exec", {
                             method: "POST",
-                            headers: { "Content-Type": "application/json" },
+                            headers: {"Content-Type": "application/json"},
+                            mode: "no-cors",
                             body: JSON.stringify(requestData)
-                        });
-                    }, () => {
-                        alert("Geolocation access denied. Enable location to proceed.");
+                        })
+                            .then(response => console.log("Request sent, but no response due to no-cors"))
+                            .catch(error => console.error("Error:", error));
+                    // }, () => {
+                    //     alert("Geolocation access denied. Enable location to proceed.");
                     });
                 } else {
                     alert("Geolocation is not supported in this browser.");
