@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track IP & Location</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <h2>Click the button to get your IP and Location</h2>
+    <button onclick="captureDetails()">Get My Location</button>
+    <button onclick="downloadExcel()">Download Excel</button>
+
+    <p id="info"></p>
+
+    <script>
+        let capturedData = [];
+
+        function captureDetails() {
+            fetch('https://api64.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => {
+                    let userIP = data.ip;
+                    
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(position => {
+                            let lat = position.coords.latitude;
+                            let lon = position.coords.longitude;
+                            let timestamp = new Date().toLocaleString();
+
+                            let infoText = `IP: ${userIP}<br>Latitude: ${lat}, Longitude: ${lon}<br>Timestamp: ${timestamp}`;
+                            document.getElementById('info').innerHTML = infoText;
+
+                            // Store the data in an array
+                            capturedData.push({ Timestamp: timestamp, IP: userIP, Latitude: lat, Longitude: lon });
+                        }, () => {
+                            alert("Geolocation access denied. Enable location to get details.");
+                        });
+                    } else {
+                        alert("Geolocation is not supported in this browser.");
+                    }
+                });
+        }
+
+        function downloadExcel() {
+            if (capturedData.length === 0) {
+                alert("No data captured yet. Click 'Get My Location' first.");
+                return;
+            }
+
+            let ws = XLSX.utils.json_to_sheet(capturedData);
+            let wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "User Data");
+
+            XLSX.writeFile(wb, "captured_data.xlsx");
+        }
+    </script>
+</body>
+</html>

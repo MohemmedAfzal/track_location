@@ -7,53 +7,75 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
-    <h2>Click the button to get your IP and Location</h2>
-    <button onclick="captureDetails()">Get My Location</button>
-    <button onclick="downloadExcel()">Download Excel</button>
+<h2>Click the button to get your IP and Location</h2>
+<button onclick="captureDetails()">Get My Location</button>
+<button onclick="downloadExcel()">Download Excel</button>
+<button onclick="clearLogs()">Clear Logs</button>
 
-    <p id="info"></p>
+<h3>Stored Logs:</h3>
+<ul id="logList"></ul>
 
-    <script>
-        let capturedData = [];
+<script>
+    let logs = JSON.parse(localStorage.getItem("locationLogs")) || []; // Retrieve stored logs
 
-        function captureDetails() {
-            fetch('https://api64.ipify.org?format=json')
-                .then(response => response.json())
-                .then(data => {
-                    let userIP = data.ip;
-                    
-                    if (navigator.geolocation) {
-                        navigator.geolocation.getCurrentPosition(position => {
-                            let lat = position.coords.latitude;
-                            let lon = position.coords.longitude;
-                            let timestamp = new Date().toLocaleString();
+    function captureDetails() {
+        fetch('https://api64.ipify.org?format=json')
+            .then(response => response.json())
+            .then(data => {
+                let userIP = data.ip;
 
-                            let infoText = `IP: ${userIP}<br>Latitude: ${lat}, Longitude: ${lon}<br>Timestamp: ${timestamp}`;
-                            document.getElementById('info').innerHTML = infoText;
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(position => {
+                        let lat = position.coords.latitude;
+                        let lon = position.coords.longitude;
+                        let timestamp = new Date().toLocaleString();
 
-                            // Store the data in an array
-                            capturedData.push({ Timestamp: timestamp, IP: userIP, Latitude: lat, Longitude: lon });
-                        }, () => {
-                            alert("Geolocation access denied. Enable location to get details.");
-                        });
-                    } else {
-                        alert("Geolocation is not supported in this browser.");
-                    }
-                });
+                        let logEntry = { Timestamp: timestamp, IP: userIP, Latitude: lat, Longitude: lon };
+                        logs.push(logEntry); // Store in logs array
+                        localStorage.setItem("locationLogs", JSON.stringify(logs)); // Save to LocalStorage
+
+                        displayLogs(); // Update UI
+                    }, () => {
+                        alert("Geolocation access denied. Enable location to get details.");
+                    });
+                } else {
+                    alert("Geolocation is not supported in this browser.");
+                }
+            });
+    }
+
+    function displayLogs() {
+        let logList = document.getElementById("logList");
+        logList.innerHTML = ""; // Clear existing list
+
+        logs.forEach((log, index) => {
+            let listItem = document.createElement("li");
+            listItem.innerHTML = `#${index + 1} - ${log.Timestamp} | IP: ${log.IP} | Lat: ${log.Latitude}, Lon: ${log.Longitude}`;
+            logList.appendChild(listItem);
+        });
+    }
+
+    function downloadExcel() {
+        if (logs.length === 0) {
+            alert("No logs found. Click 'Get My Location' first.");
+            return;
         }
 
-        function downloadExcel() {
-            if (capturedData.length === 0) {
-                alert("No data captured yet. Click 'Get My Location' first.");
-                return;
-            }
+        let ws = XLSX.utils.json_to_sheet(logs);
+        let wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Location Logs");
 
-            let ws = XLSX.utils.json_to_sheet(capturedData);
-            let wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "User Data");
+        XLSX.writeFile(wb, "location_logs.xlsx");
+    }
 
-            XLSX.writeFile(wb, "captured_data.xlsx");
-        }
-    </script>
+    function clearLogs() {
+        localStorage.removeItem("locationLogs");
+        logs = [];
+        displayLogs();
+        alert("Logs cleared.");
+    }
+
+    displayLogs(); // Show logs on page load
+</script>
 </body>
 </html>
