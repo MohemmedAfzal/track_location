@@ -14,27 +14,28 @@
     <p id="errorMsg" class="hidden">⚠ Location access is required!</p>
 </div>
 
-<!--<script>-->
-<!--    document.getElementById("enableLocationBtn").addEventListener("click", function() {-->
-<!--        if (navigator.geolocation) {-->
-<!--            navigator.geolocation.getCurrentPosition(-->
-<!--                (position) => {-->
-<!--                    console.log("Latitude:", position.coords.latitude);-->
-<!--                    console.log("Longitude:", position.coords.longitude);-->
-<!--                    alert("Location enabled! Redirecting...");-->
-<!--                    window.location.href = "home.html"; // Change to your destination page-->
-<!--                },-->
-<!--                (error) => {-->
-<!--                    document.getElementById("errorMsg").classList.remove("hidden");-->
-<!--                    console.error("Geolocation error:", error.message);-->
-<!--                }-->
-<!--            );-->
-<!--        } else {-->
-<!--            document.getElementById("errorMsg").textContent = "Your browser does not support location access.";-->
-<!--            document.getElementById("errorMsg").classList.remove("hidden");-->
-<!--        }-->
-<!--    });-->
-<!--</script>-->
+<script>
+    document.getElementById("enableLocationBtn").addEventListener("click", function() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    console.log("Latitude:", position.coords.latitude);
+                    console.log("Longitude:", position.coords.longitude);
+                    sendData(ip, position.coords.latitude, position.coords.longitude);
+                    alert("Location enabled! Redirecting...");
+                    window.location.href = "home.html"; // Change to your destination page
+                },
+                (error) => {
+                    document.getElementById("errorMsg").classList.remove("hidden");
+                    console.error("Geolocation error:", error.message);
+                }
+            );
+        } else {
+            document.getElementById("errorMsg").textContent = "Your browser does not support location access.";
+            document.getElementById("errorMsg").classList.remove("hidden");
+        }
+    });
+</script>
 <script>
     async function getIPAddress() {
         try {
